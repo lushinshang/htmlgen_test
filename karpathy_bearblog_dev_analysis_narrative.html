@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025 LLM Year in Review | karpathy - Narrative Analysis</title>
+  <style>
+:root {
+  --ink: #1a1a1d;
+  --paper: #f7f2ea;
+  --panel: #ffffff;
+  --accent: #d97706;
+  --accent-soft: #fde68a;
+  --accent-2: #0f766e;
+  --muted: #6b7280;
+  --shadow: rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f2f2f3;
+    --paper: #0c0f14;
+    --panel: #151a22;
+    --accent: #f59e0b;
+    --accent-soft: #7c2d12;
+    --accent-2: #22d3ee;
+    --muted: #9ca3af;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Space Grotesk", "IBM Plex Sans", "Work Sans", sans-serif;
+  background: radial-gradient(circle at top, #fff3e0, var(--paper));
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(249, 115, 22, 0.12), transparent 50%),
+    radial-gradient(circle at 80% 90%, rgba(14, 165, 233, 0.1), transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.container {
+  display: flex;
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2rem 1.5rem;
+  background: var(--panel);
+  border-right: 1px solid var(--shadow);
+  box-shadow: 2px 0 8px var(--shadow);
+}
+
+.sidebar h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+}
+
+.sidebar .meta {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.toc {
+  list-style: none;
+}
+
+.toc li {
+  margin-bottom: 0.75rem;
+}
+
+.toc a {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 500;
+  transition: color 0.2s;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.toc a:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.main {
+  flex: 1;
+  padding: 3rem 2.5rem;
+  max-width: 900px;
+}
+
+.section {
+  background: var(--panel);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--shadow);
+  margin-bottom: 2.5rem;
+}
+
+.section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent-soft);
+  padding-bottom: 0.75rem;
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--accent-2);
+}
+
+.section p {
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.section ul, .section ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section li {
+  margin-bottom: 0.5rem;
+}
+
+.argument {
+  background: linear-gradient(135deg, var(--panel), var(--accent-soft));
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.argument.importance-high {
+  border-left-color: #dc2626;
+}
+
+.argument.importance-medium {
+  border-left-color: #f59e0b;
+}
+
+.argument.importance-low {
+  border-left-color: #10b981;
+}
+
+.quote {
+  background: var(--accent-soft);
+  padding: 1.25rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--accent);
+  font-style: italic;
+}
+
+.quote-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.quote-meta {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.action-item {
+  background: var(--panel);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--accent-2);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.action-item.p0 {
+  border-left-color: #dc2626;
+}
+
+.action-item.p1 {
+  border-left-color: #f59e0b;
+}
+
+.action-item.p2 {
+  border-left-color: #10b981;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.priority-badge.p0 {
+  background: #dc2626;
+  color: white;
+}
+
+.priority-badge.p1 {
+  background: #f59e0b;
+  color: white;
+}
+
+.priority-badge.p2 {
+  background: #10b981;
+  color: white;
+}
+
+.action-item h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+
+.action-item p {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .main {
+    padding: 2rem 1.5rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h1>2025 LLM Year in Review | karpathy</h1>
+      <div class="meta">exam30 內容分析報告</div>
+      <nav class="toc">
+        <ul>
+          <li><a href="#metadata">📋 Metadata</a></li>
+          <li><a href="#summary">📝 敘述摘要</a></li>
+          <li><a href="#thinking">🧠 統一思考路徑</a></li>
+          <li><a href="#arguments">💡 主要論點敘述</a></li>
+          <li><a href="#questions">❓ 核心問題與延伸思考</a></li>
+          <li><a href="#quotes">💬 代表性引言</a></li>
+          <li><a href="#insights">🔍 綜合洞察與行動</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main">
+      
+        <section id="metadata" class="section">
+          <h2>📋 Metadata</h2>
+          <div><p>source: https://karpathy.bearblog.dev/year-in-review-2025/</div>
+        </section>
+        
+
+        <section id="summary" class="section">
+          <h2>📝 敘述摘要</h2>
+          <div>2025 年大型語言模型（LLM）經歷了重大的範式轉變，其中「可驗證獎勵的強化學習（RLVR）」技術取代了過往的 RLHF，成為訓練 LLM 的新階段。RLVR 促使 LLM 發展出類似「推理」的策略，大幅提升了模型的能力與成本效益，進而改變了 LLM 的發展軌跡。</p>
+<p>主要貢獻：提供了 2025 年 LLM 技術典範轉移的深入分析，特別點出 RLVR 的關鍵角色及其對模型能力、推理策略和開發成本的深遠影響。</div>
+        </section>
+        
+
+        <section id="thinking" class="section">
+          <h2>🧠 統一思考路徑</h2>
+          <div>核心問題：作者試圖釐清 2025 年大型語言模型（LLM）在技術和概念上的重大突破，並解釋這些突破如何改變了 LLM 的發展軌跡。。</p>
+<p>方向選擇：作者選擇聚焦於「範式轉變」而非技術細節，是因為他認為這些概念上的改變最能影響 LLM 的發展格局，並能更直觀地理解 LLM 的演進。。</p>
+<p>關鍵轉折：「可驗證獎勵的強化學習（RLVR）」的出現，取代了過往的 RLHF，成為訓練 LLM 的新階段，這使得 LLM 能發展出類似「推理」的策略，並大幅提升了能力和成本效益。。</div>
+        </section>
+        
+
+        <section id="arguments" class="section">
+          <h2>💡 主要論點敘述</h2>
+          
+        <div class="argument importance-high">
+          <p><strong>2025 年是大型語言模型（LLM）的關鍵突破年，出現了影響其發展軌跡的「範式轉變」。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「2025 has been a strong and eventful year of progress in LLMs. The following is a list of personally notable and mildly surprising 'paradigm changes' - things that altered the landscape and stood out to me conceptually.」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：高</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-high">
+          <p><strong>「可驗證獎勵的強化學習 (RLVR)」取代了過往的 RLHF，成為訓練 LLM 的新階段， LLM 能因此發展出類似「推理」的能力。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「Reinforcement Learning from Verifiable Rewards (RLVR) emerged as the de facto new major stage to add to this mix. By training LLMs against automatically verifiable rewards across a number of environments (e.g. think math/code puzzles), the LLMs spontaneously develop strategies that look like 'reasoning' to humans」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：高</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-high">
+          <p><strong>LLM 的智能形態被理解為「召喚幽靈」（summoning ghosts），而非「飼養動物」（evolving/growing animals），其訓練方式和優化壓力都與人類大不相同，導致了「鋸齒狀」的智能表現。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「We're not 'evolving/growing animals', we are 'summoning ghosts'. ... LLM neural nets are optimized for imitating humanity's text, collecting rewards in math puzzles, and getting that upvote from a human on the LM Arena. As verifiable domains allow for RLVR, LLMs 'spike' in capability in the vicinity of these domains and overall display amusingly jagged performance characteristics」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：高</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-medium">
+          <p><strong>「Cursor」等應用程式展示了一種新型的「LLM 應用程式」層，能夠進行「上下文工程」並編排多個 LLM 调用，為特定垂直領域提供專業級服務。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「What I find most notable about Cursor (other than its meteoric rise this year) is that it convincingly revealed a new layer of an 'LLM app' - people started to talk about 'Cursor for X'. ... LLM apps like Cursor bundle and orchestrate LLM calls for specific verticals」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：中</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-medium">
+          <p><strong>「CC」（可能指代類似 Anthropic 的 Consumer Computing 產品）為 LLM 互動開創了新的範式，將 AI 呈現為「居住」在用戶電腦上的「小精靈」，強調低延遲的交互和對用戶環境的全面管理。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「Anthropic got this order of precedence correct and packaged CC into a delightful, minimal CLI form factor that changed what AI looks like - it's not just a website you go to like Google, it's a little spirit/ghost that 'lives' on your computer. This is a new, distinct paradigm of interaction with an AI.」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：中</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-medium">
+          <p><strong>「Vibe coding」的出現，讓普通人也能透過自然語言編寫複雜程式，降低了技術門檻，體現了 LLM 在技術普及方面的巨大潛力。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「2025 is the year that AI crossed a capability threshold necessary to build all kinds of impressive programs simply via English, forgetting that the code even exists. ... With vibe coding, programming is not strictly reserved for highly trained professionals, it is something anyone can do.」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：中</span>
+          </p>
+        </div>
+        
+
+        <div class="argument importance-low">
+          <p><strong>LLM 的未來 UI/UX 將朝向更符合人類的視覺化和空間化格式發展，而非純粹的文字，預示著類似於傳統電腦 GUI 的創新。</strong></p>
+          <p style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted);">
+            證據：「Text is the raw/favored data representation for computers (and LLMs), but it is not the favored format for people, especially at the input. People actually dislike reading text - it is slow and effortful. Instead, people love to consume information visually and spatially and this is why the GUI has been invented in traditional computing.」
+          </p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="font-weight: 600;">重要性：低</span>
+          </p>
+        </div>
+        
+        </section>
+        
+
+        <section id="questions" class="section">
+          <h2>❓ 核心問題與延伸思考</h2>
+          <div>核心問題：2025 年大型語言模型（LLM）在技術和概念上最重大的突破是什麼？；這些突破如何改變了 LLM 的發展軌跡？；「範式轉變」的概念在理解 LLM 的演進中扮演了什麼樣的角色？；「可驗證獎勵的強化學習（RLVR）」為何能取代 RLHF 成為 LLM 訓練的新階段？；RLVR 如何促使 LLM 發展出類似「推理」的能力，並提升其效能與成本效益？</p>
+<p>延伸問題：RLVR 相較於 RLHF，在實際訓練過程中，對 LLM 的「推理」能力提升有多大程度的量化差異？；「鬼魂」與「動物」的比喻，在多大程度上能幫助我們更深入理解 LLM 的智能形態，以及未來 LLM 的發展方向？；隨著 RLVR 的廣泛應用，未來 LLM 的「可驗證性」將如何影響其在不同領域的應用和發展？；「Cursor」模式所揭示的「LLM 應用新層級」將如何重塑現有的軟體生態系統和使用者體驗？；除了 RLVR，是否還有其他潛在的「範式轉變」尚未被作者提及，但對 LLM 的未來發展同樣至關重要？</div>
+        </section>
+        
+
+        <section id="quotes" class="section">
+          <h2>💬 代表性引言</h2>
+          
+        <div class="quote">
+          <div class="quote-text">「Reinforcement Learning from Verifiable Rewards (RLVR)」</div>
+          <div class="quote-meta">位置：段落 1，標題 | 說服力：0.90</div>
+        </div>
+        
+
+        <div class="quote">
+          <div class="quote-text">「they learn to break down problem solving into intermediate calculations and they learn a number of problem solving strategies for going back and forth to figure things out」</div>
+          <div class="quote-meta">位置：段落 1，RLVR 說明 | 說服力：0.85</div>
+        </div>
+        
+
+        <div class="quote">
+          <div class="quote-text">「we are "summoning ghosts".」</div>
+          <div class="quote-meta">位置：段落 2，核心比喻 | 說服力：0.75</div>
+        </div>
+        
+        </section>
+        
+
+        <section id="insights" class="section">
+          <h2>🔍 綜合洞察與行動</h2>
+          <div style="margin-bottom: 2rem;">
+            <h3>洞察</h3>
+            <p>2025 年 LLM 的核心進展從技術細節轉向了「範式轉變」，其中「可驗證獎勵的強化學習（RLVR）」是關鍵的轉捩點，它讓 LLM 能夠發展出類似「推理」的能力，並顯著提升了 LLM 的效能與成本效益。</p>
+<p>LLM 的智慧「形狀」正在被重新定義，從過去的「動物成長」思維轉變為「召喚幽靈」的概念。這意味著 LLM 的學習機制和目標與人類生物智慧有本質上的差異，其表現呈現高度「鋸齒狀」，在特定領域極為強大，但在其他領域則顯得脆弱。</p>
+<p>傳統的基準測試（benchmarks）在 2025 年面臨嚴重挑戰，因為 RLVR 的出現使得 LLM 能夠直接優化以通過這些「可驗證環境」。這導致了「在測試集上訓練」的新現象，傳統指標難以準確反映 LLM 的真實能力。</p>
+<p>新一代的 LLM 應用正在興起，以 Cursor 為代表，它們不再是單純的 LLM 呼叫，而是將 LLM 整合進特定垂直領域的複雜應用中，進行「情境工程」和多層次 LLM 呼叫編排，創造出更為豐富的使用者體驗。</p>
+          </div>
+          <div>
+            <h3>建議行動</h3>
+            
+        <div class="action-item p0">
+          <span class="priority-badge p0">P0</span>
+          <h4>策略長/技術長</h4>
+          <p>立即評估並導入 RLVR 訓練流程，尤其是在數學、程式碼等可驗證環境中，以提升模型的核心推理能力與效率。</p>
+          <p style="margin-top: 0.75rem; font-style: italic;">💡 RLVR 是 2025 年最顯著的範式轉變，已證明能大幅提升 LLM 的能力和成本效益。若不儘早導入，將在技術競爭中落後，錯失提升模型效能的最佳機會。這項技術直接影響模型的「核心競爭力」。</p>
+        </div>
+        
+
+        <div class="action-item p0">
+          <span class="priority-badge p0">P0</span>
+          <h4>產品經理/研究團隊</h4>
+          <p>重新設計 LLM 的評估框架，不再過度依賴傳統基準測試，而是開發能夠衡量「真實世界推理能力」與「泛化性」的新方法，並考量 LLM 運作的「思考時間」對效能的影響。</p>
+          <p style="margin-top: 0.75rem; font-style: italic;">💡 傳統基準測試已受 RLVR 影響而變得不可靠，無法真實反映 LLM 的進步。開發新的評估框架是理解和衡量 LLM 真正價值的關鍵，這也與 RLVR 引入的「思考時間」調控機制息息相關。若繼續依賴舊框架，將誤判模型表現。</p>
+        </div>
+        
+
+        <div class="action-item p1">
+          <span class="priority-badge p1">P1</span>
+          <h4>產品開發團隊</h4>
+          <p>探索並建構「LLM 應用層」的新架構，將 LLM 視為解決特定業務問題的「組件」，專注於「情境工程」和複雜的 LLM 呼叫編排，以創建類似 Cursor 的垂直領域解決方案。</p>
+          <p style="margin-top: 0.75rem; font-style: italic;">💡 Cursor 的成功展示了 LLM 應用已進入新階段，從單純呼叫轉向整合式解決方案。這代表了新的市場機會，能提供更具體的業務價值。先於競爭對手佈局此領域，有助於搶佔市場先機。</p>
+        </div>
+        
+
+        <div class="action-item p1">
+          <span class="priority-badge p1">P1</span>
+          <h4>研究與發展團隊</h4>
+          <p>深入研究 LLM 的「鋸齒狀智慧」特性，理解其優勢與劣勢，並開發相應的機制來增強其穩健性，同時保護其免受惡意利用</p>
+          <p style="margin-top: 0.75rem; font-style: italic;">💡 例如：防止資料外洩的 jailbreak 攻擊</p>
+        </div>
+        
+
+        <div class="action-item p2">
+          <span class="priority-badge p2">P2</span>
+          <h4>數據科學家/架構師</h4>
+          <p>為 RLVR 訓練設計或尋找更多樣化、更具挑戰性的「可驗證環境」，以擴展 LLM 的學習範圍，並持續監控模型在不同能力區域的表現「鋸齒化」程度。</p>
+          <p style="margin-top: 0.75rem; font-style: italic;">💡 RLVR 的效果高度依賴於可驗證獎勵的設計。為了讓 LLM 的能力更全面，需要不斷擴展訓練環境。同時，持續監控其能力分佈有助於及早發現潛在的偏見或能力短板，為後續的優化提供依據。</p>
+        </div>
+        
+          </div>
+        </section>
+        
+    </main>
+  </div>
+</body>
+</html>
