@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025 LLM Year in Review | karpathy</title>
+  <style>
+:root {
+  --ink: #1a1a1d;
+  --paper: #f7f2ea;
+  --panel: #ffffff;
+  --accent: #d97706;
+  --accent-soft: #fde68a;
+  --accent-2: #0f766e;
+  --muted: #6b7280;
+  --shadow: rgba(15, 23, 42, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f2f2f3;
+    --paper: #0c0f14;
+    --panel: #151a22;
+    --accent: #f59e0b;
+    --accent-soft: #7c2d12;
+    --accent-2: #22d3ee;
+    --muted: #9ca3af;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Space Grotesk", "IBM Plex Sans", "Work Sans", sans-serif;
+  background: radial-gradient(circle at top, #fff3e0, var(--paper));
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(249, 115, 22, 0.12), transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(14, 116, 144, 0.12), transparent 45%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: linear-gradient(160deg, #0f172a, #1e293b);
+  color: #f8fafc;
+  padding: 2.5rem 2rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: 12px 0 30px var(--shadow);
+}
+
+.brand {
+  font-family: "Fraunces", "Spectral", serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.sidebar h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.toc a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.45rem 0.75rem;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.toc a:hover {
+  border-left-color: var(--accent);
+  color: var(--accent-soft);
+}
+
+.terminology dd {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.85rem;
+  color: rgba(248, 250, 252, 0.8);
+}
+
+.keywords .keyword {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(248, 250, 252, 0.12);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  margin: 0.2rem 0.2rem 0 0;
+}
+
+.content {
+  padding: 3rem 4rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.report-header h1 {
+  font-family: "Fraunces", "Spectral", serif;
+  font-size: 2.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.metadata {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+.five-layer {
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 16px 40px var(--shadow);
+  border-left: 6px solid var(--accent);
+}
+
+.five-layer h2 {
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.audience {
+  display: inline-block;
+  margin: 0.3rem 0.4rem 0 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: #7c2d12;
+  font-size: 0.85rem;
+}
+
+.argument-card {
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(15, 118, 110, 0.08);
+  margin-bottom: 0.75rem;
+}
+
+.argument-card .argument {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.argument-card .context {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(15, 118, 110, 0.3);
+  font-style: italic;
+}
+
+.argument-card .rationale {
+  font-size: 0.88rem;
+  color: rgba(217, 119, 6, 0.9);
+  margin-bottom: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background: rgba(217, 119, 6, 0.08);
+  border-radius: 6px;
+}
+
+.argument-card .evidence-translation {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 2px dashed rgba(15, 118, 110, 0.3);
+}
+
+.argument-card .importance {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.quotes-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.quote-item {
+  border-left: 4px solid var(--accent-2);
+  padding-left: 1rem;
+  background: rgba(15, 118, 110, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.quote-score-detail {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+.quote-translation {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0.5rem 0;
+}
+
+.controversy {
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.35);
+}
+
+.controversy:last-child {
+  border-bottom: none;
+}
+
+.controversy p {
+  margin: 0.6rem 0;
+}
+
+.recommendation {
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(217, 119, 6, 0.1);
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.priority-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+@media (max-width: 960px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: relative;
+    height: auto;
+  }
+
+  .content {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 1.5rem;
+  }
+
+  .five-layer {
+    padding: 1.5rem;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">exam30 v3 report</div>
+      <nav class="toc">
+        <h3>快速導覽</h3>
+        <ul><li class="toc-level-1"><a href="#summary">重點整理</a></li><li class="toc-level-1"><a href="#content">主要論點</a></li><li class="toc-level-1"><a href="#questions">重要問題</a></li><li class="toc-level-1"><a href="#quotes">精選語錄</a></li><li class="toc-level-1"><a href="#insights">行動建議</a></li></ul>
+      </nav>
+      <section class="terminology">
+        <h3>重要名詞</h3>
+        <dl><dt>LLM</dt><dd>Large Language Model｜大型語言模型，就是能讀大量文字、能對話寫作的 AI 模型。</dd><dt>RLVR</dt><dd>Reinforcement Learning from Verifiable Rewards｜可驗證獎勵強化學習，使用可自動驗證的獎勵訊號來訓練模型。</dd><dt>GPT</dt><dd>Generative Pre-trained Transformer｜生成式預訓練模型家族，常見的對話式 AI 架構。</dd><dt>RLHF</dt><dd>Reinforcement Learning from Human Feedback｜人類回饋強化學習，用人的評分或偏好來引導模型行為。</dd><dt>SFT</dt><dd>Supervised Fine-Tuning｜監督式微調，用標註資料把模型調整到特定任務。</dd><dt>RL</dt><dd>Reinforcement Learning｜強化學習，透過回饋與獎勵學習行為策略。</dd><dt>LM</dt><dd>Language Model｜語言模型，負責預測下一個字詞的機率。</dd><dt>AI</dt><dd>Artificial Intelligence｜人工智慧，讓機器具備理解、推理與決策能力。</dd><dt>AGI</dt><dd>Artificial General Intelligence｜通用人工智慧，能跨領域泛化、像人類一樣學習。</dd><dt>GUI</dt><dd>Graphical User Interface｜圖形使用者介面，用視覺化方式操作軟體。</dd></dl>
+      </section>
+      <section class="keywords">
+        <h3>關鍵字</h3>
+        <span class="keyword">about</span><span class="keyword">capability</span><span class="keyword">intelligence</span><span class="keyword">people</span><span class="keyword">computer</span><span class="keyword">human</span><span class="keyword">training</span><span class="keyword">coding</span><span class="keyword">rewards</span><span class="keyword">think</span><span class="keyword">verifiable</span><span class="keyword">which</span><span class="keyword">benchmarks</span><span class="keyword">coded</span><span class="keyword">cursor</span><span class="keyword">early</span><span class="keyword">first</span><span class="keyword">generation</span><span class="keyword">going</span><span class="keyword">jagged</span><span class="keyword">notable</span><span class="keyword">paradigm</span><span class="keyword">professionals</span><span class="keyword">reasoning</span><span class="keyword">similar</span><span class="keyword">something</span><span class="keyword">stage</span><span class="keyword">world</span><span class="keyword">actually</span><span class="keyword">against</span><span class="keyword">agent</span><span class="keyword">animals</span><span class="keyword">banana</span><span class="keyword">because</span><span class="keyword">cloud</span><span class="keyword">computing</span><span class="keyword">context</span><span class="keyword">different</span><span class="keyword">environments</span><span class="keyword">favored</span><span class="keyword">getting</span><span class="keyword">ghosts</span><span class="keyword">instead</span><span class="keyword">kinds</span><span class="keyword">layer</span><span class="keyword">learn</span><span class="keyword">learning</span><span class="keyword">longer</span><span class="keyword">neural</span><span class="keyword">optimization</span><span class="keyword">problem</span><span class="keyword">progress</span><span class="keyword">reinforcement</span><span class="keyword">solving</span><span class="keyword">space</span><span class="keyword">specific</span><span class="keyword">strategies</span><span class="keyword">there</span><span class="keyword">therefore</span><span class="keyword">things</span><span class="keyword">where</span><span class="keyword">would</span><span class="keyword">agents</span><span class="keyword">amusingly</span><span class="keyword">build</span><span class="keyword">calls</span><span class="keyword">claude</span><span class="keyword">compute</span><span class="keyword">computers</span><span class="keyword">conceptually</span><span class="keyword">demonstration</span><span class="keyword">domains</span><span class="keyword">emerged</span><span class="keyword">ephemeral</span><span class="keyword">especially</span><span class="keyword">everything</span><span class="keyword">existing</span><span class="keyword">expected</span><span class="keyword">feedback</span><span class="keyword">feels</span><span class="keyword">format</span><span class="keyword">google</span><span class="keyword">grade</span><span class="keyword">highly</span><span class="keyword">image</span><span class="keyword">industry</span><span class="keyword">interaction</span><span class="keyword">intermediate</span><span class="keyword">little</span><span class="keyword">lives</span><span class="keyword">looks</span><span class="keyword">major</span><span class="keyword">mildly</span><span class="keyword">model</span><span class="keyword">number</span><span class="keyword">offer</span><span class="keyword">openai</span><span class="keyword">optimized</span><span class="keyword">orchestrate</span><span class="keyword">other</span><span class="keyword">overall</span><span class="keyword">performance</span><span class="keyword">personally</span><span class="keyword">present</span><span class="keyword">pretraining</span><span class="keyword">private</span><span class="keyword">production</span><span class="keyword">programming</span><span class="keyword">puzzles</span><span class="keyword">regular</span><span class="keyword">running</span><span class="keyword">sense</span><span class="keyword">should</span><span class="keyword">simply</span><span class="keyword">simultaneously</span><span class="keyword">single</span><span class="keyword">software</span><span class="keyword">stack</span><span class="keyword">started</span><span class="keyword">surprising</span><span class="keyword">teams</span><span class="keyword">technology</span><span class="keyword">their</span><span class="keyword">these</span><span class="keyword">through</span><span class="keyword">traces</span><span class="keyword">trained</span><span class="keyword">version</span><span class="keyword">verticals</span><span class="keyword">visually</span><span class="keyword">while</span><span class="keyword">written</span><span class="keyword">achieve</span><span class="keyword">across</span><span class="keyword">actuators</span><span class="keyword">addition</span><span class="keyword">adjacent</span><span class="keyword">adopt</span><span class="keyword">after</span><span class="keyword">algorithms</span><span class="keyword">allow</span><span class="keyword">allows</span><span class="keyword">almost</span><span class="keyword">already</span><span class="keyword">alter</span><span class="keyword">altered</span><span class="keyword">animal</span><span class="keyword">animate</span><span class="keyword">animations</span><span class="keyword">another</span><span class="keyword">anthropic</span><span class="keyword">anyone</span><span class="keyword">anywhere</span><span class="keyword">apathy</span><span class="keyword">application</span><span class="keyword">applications</span><span class="keyword">approach</span><span class="keyword">architecture</span><span class="keyword">arena</span><span class="keyword">aspect</span><span class="keyword">associated</span><span class="keyword">automatically</span><span class="keyword">autonomy</span><span class="keyword">balancing</span><span class="keyword">believe</span><span class="keyword">benchmaxxing</span><span class="keyword">benefit</span><span class="keyword">booted</span><span class="keyword">break</span><span class="keyword">bundle</span><span class="keyword">calculations</span><span class="keyword">capabilities</span><span class="keyword">capable</span><span class="keyword">capacity</span><span class="keyword">capsule</span><span class="keyword">capture</span><span class="keyword">carefully</span><span class="keyword">challenged</span><span class="keyword">changed</span><span class="keyword">changes</span><span class="keyword">characteristics</span><span class="keyword">chatgpt</span><span class="keyword">chatter</span><span class="keyword">chatting</span><span class="keyword">chewing</span><span class="keyword">clear</span><span class="keyword">codex</span><span class="keyword">cognitive</span><span class="keyword">cognitively</span><span class="keyword">coined</span><span class="keyword">collecting</span><span class="keyword">college</span><span class="keyword">combinator</span><span class="keyword">coming</span><span class="keyword">commands</span><span class="keyword">compared</span><span class="keyword">complex</span><span class="keyword">computationally</span><span class="keyword">configuration</span><span class="keyword">confused</span><span class="keyword">console</span><span class="keyword">construct</span><span class="keyword">construction</span><span class="keyword">consume</span><span class="keyword">consumption</span><span class="keyword">containers</span><span class="keyword">continued</span><span class="keyword">contrast</span><span class="keyword">control</span><span class="keyword">convincing</span><span class="keyword">convincingly</span><span class="keyword">corporations</span><span class="keyword">correct</span><span class="keyword">could</span><span class="keyword">council</span><span class="keyword">course</span><span class="keyword">cover</span><span class="keyword">crossed</span><span class="keyword">crush</span><span class="keyword">custom</span><span class="keyword">deepseek</span><span class="keyword">defined</span><span class="keyword">delightful</span><span class="keyword">demos</span><span class="keyword">deployed</span><span class="keyword">deployments</span><span class="keyword">descriptions</span><span class="keyword">develop</span><span class="keyword">developer</span><span class="keyword">difference</span><span class="keyword">difficult</span><span class="keyword">diffusion</span><span class="keyword">directly</span><span class="keyword">discardable</span><span class="keyword">dislike</span><span class="keyword">display</span><span class="keyword">distinct</span><span class="keyword">distinction</span><span class="keyword">dress</span><span class="keyword">dumber</span><span class="keyword">dwarkesh</span><span class="keyword">earlier</span><span class="keyword">easier</span><span class="keyword">efficient</span><span class="keyword">effortful</span><span class="keyword">efforts</span><span class="keyword">embedding</span><span class="keyword">emerging</span><span class="keyword">emoji</span><span class="keyword">empower</span><span class="keyword">empowers</span><span class="keyword">endgame</span><span class="keyword">engineering</span><span class="keyword">english</span><span class="keyword">enough</span><span class="keyword">entire</span><span class="keyword">entities</span><span class="keyword">environment</span><span class="keyword">equivalents</span><span class="keyword">eventful</span><span class="keyword">evolving</span><span class="keyword">example</span><span class="keyword">examples</span><span class="keyword">exciting</span><span class="keyword">exfiltrate</span><span class="keyword">exist</span><span class="keyword">exists</span><span class="keyword">extended</span><span class="keyword">extremely</span><span class="keyword">facto</span><span class="keyword">factor</span><span class="keyword">field</span><span class="keyword">figure</span><span class="keyword">finetune</span><span class="keyword">finetunes</span><span class="keyword">finetuning</span><span class="keyword">focused</span><span class="keyword">following</span><span class="keyword">forgetting</span><span class="keyword">forms</span><span class="keyword">forth</span><span class="keyword">function</span><span class="keyword">functions</span><span class="keyword">fundamentally</span><span class="keyword">gameable</span><span class="keyword">gemini</span><span class="keyword">general</span><span class="keyword">generally</span><span class="keyword">generating</span><span class="keyword">genius</span><span class="keyword">ghost</span><span class="keyword">gobbled</span><span class="keyword">governments</span><span class="keyword">graduate</span><span class="keyword">green</span><span class="keyword">growing</span><span class="keyword">happen</span><span class="keyword">having</span><span class="keyword">highlighted</span><span class="keyword">humanity</span><span class="keyword">humans</span><span class="keyword">ideas</span><span class="keyword">images</span><span class="keyword">imitating</span><span class="keyword">immediately</span><span class="keyword">importantly</span><span class="keyword">impressive</span><span class="keyword">inappropriate</span><span class="keyword">increasing</span><span class="keyword">increasingly</span><span class="keyword">incredible</span><span class="keyword">inevitably</span><span class="keyword">inflection</span><span class="keyword">infographics</span><span class="keyword">information</span><span class="keyword">innovations</span><span class="keyword">input</span><span class="keyword">installation</span><span class="keyword">instructgpt</span><span class="keyword">intended</span><span class="keyword">internalize</span><span class="keyword">internet</span><span class="keyword">intuitive</span><span class="keyword">intuitively</span><span class="keyword">invented</span><span class="keyword">involves</span><span class="keyword">issue</span><span class="keyword">issuing</span><span class="keyword">italics</span><span class="keyword">itself</span><span class="keyword">jaggies</span><span class="keyword">jailbreak</span><span class="keyword">joint</span><span class="keyword">jungle</span><span class="keyword">knowledge</span><span class="keyword">landscape</span><span class="keyword">latency</span><span class="keyword">level</span><span class="keyword">libraries</span><span class="keyword">lists</span><span class="keyword">localhost</span><span class="keyword">locally</span><span class="keyword">looked</span><span class="keyword">loops</span><span class="keyword">loopy</span><span class="keyword">makes</span><span class="keyword">malleable</span><span class="keyword">markdown</span><span class="keyword">matters</span><span class="keyword">meanwhile</span><span class="keyword">mentioned</span><span class="keyword">menugen</span><span class="keyword">meteoric</span><span class="keyword">microcontrollers</span><span class="keyword">might</span><span class="keyword">minds</span><span class="keyword">minimal</span><span class="keyword">minor</span><span class="keyword">models</span><span class="keyword">multiple</span><span class="keyword">nanochat</span><span class="keyword">necessary</span><span class="keyword">never</span><span class="keyword">objective</span><span class="keyword">oblivious</span><span class="keyword">obvious</span><span class="keyword">occupied</span><span class="keyword">optimal</span><span class="keyword">orchestrated</span><span class="keyword">order</span><span class="keyword">organize</span><span class="keyword">original</span><span class="keyword">originally</span><span class="keyword">otherwise</span><span class="keyword">overhang</span><span class="keyword">packaged</span><span class="keyword">paper</span><span class="keyword">paradigms</span><span class="keyword">paradoxically</span><span class="keyword">particular</span><span class="keyword">pastures</span><span class="keyword">personal</span><span class="keyword">pockets</span><span class="keyword">point</span><span class="keyword">pointing</span><span class="keyword">polymath</span><span class="keyword">potential</span><span class="keyword">power</span><span class="keyword">precedence</span><span class="keyword">pressure</span><span class="keyword">previous</span><span class="keyword">primary</span><span class="keyword">process</span><span class="keyword">programs</span><span class="keyword">projects</span><span class="keyword">proven</span><span class="keyword">provide</span><span class="keyword">quick</span><span class="keyword">rapid</span><span class="keyword">reader</span><span class="keyword">reading</span><span class="keyword">realized</span><span class="keyword">reasons</span><span class="keyword">recipe</span><span class="keyword">recoveries</span><span class="keyword">reference</span><span class="keyword">related</span><span class="keyword">relatively</span><span class="keyword">release</span><span class="keyword">representation</span><span class="keyword">reserved</span><span class="keyword">revealed</span><span class="keyword">review</span><span class="keyword">reward</span><span class="keyword">scaling</span><span class="keyword">schooler</span><span class="keyword">script</span><span class="keyword">seconds</span><span class="keyword">secrets</span><span class="keyword">section</span><span class="keyword">sensors</span><span class="keyword">shape</span><span class="keyword">sharp</span><span class="keyword">shifting</span><span class="keyword">short</span><span class="keyword">shower</span><span class="keyword">sized</span><span class="keyword">slider</span><span class="keyword">slides</span><span class="keyword">smarter</span><span class="keyword">sorry</span><span class="keyword">spatially</span><span class="keyword">speak</span><span class="keyword">spent</span><span class="keyword">spike</span><span class="keyword">spirit</span><span class="keyword">spontaneously</span><span class="keyword">stable</span><span class="keyword">stages</span><span class="keyword">start</span><span class="keyword">still</span><span class="keyword">stood</span><span class="keyword">strap</span><span class="keyword">strictly</span><span class="keyword">strings</span><span class="keyword">strong</span><span class="keyword">strung</span><span class="keyword">student</span><span class="keyword">suddenly</span><span class="keyword">summoning</span><span class="keyword">supervised</span><span class="keyword">supervision</span><span class="keyword">supplying</span><span class="keyword">surface</span><span class="keyword">surprise</span><span class="keyword">survival</span><span class="keyword">susceptible</span><span class="keyword">suspect</span><span class="keyword">swarms</span><span class="keyword">synthetic</span><span class="keyword">tables</span><span class="keyword">takeoff</span><span class="keyword">tangled</span><span class="keyword">terms</span><span class="keyword">terraform</span><span class="keyword">thick</span><span class="keyword">thinking</span><span class="keyword">thoughts</span><span class="keyword">threshold</span><span class="keyword">titles</span><span class="keyword">together</span><span class="keyword">tokenizer</span><span class="keyword">topic</span><span class="keyword">totally</span><span class="keyword">tradeoffs</span><span class="keyword">traditional</span><span class="keyword">transcript</span><span class="keyword">trend</span><span class="keyword">tribe</span><span class="keyword">tricked</span><span class="keyword">trust</span><span class="keyword">turned</span><span class="keyword">tweet</span><span class="keyword">typical</span><span class="keyword">under</span><span class="keyword">unique</span><span class="keyword">unlike</span><span class="keyword">upvote</span><span class="keyword">useful</span><span class="keyword">verifiability</span><span class="keyword">vicinity</span><span class="keyword">video</span><span class="keyword">videos</span><span class="keyword">wanted</span><span class="keyword">weaker</span><span class="keyword">website</span><span class="keyword">weights</span><span class="keyword">whatever</span><span class="keyword">whiteboards</span><span class="keyword">whole</span><span class="keyword">works</span><span class="keyword">write</span><span class="keyword">wrong</span><span class="keyword">wrote</span>
+      </section>
+    </aside>
+    <main class="content">
+      <header class="report-header">
+        <h1>2025 LLM Year in Review | karpathy</h1>
+        <div class="metadata"><span class="meta-item"><strong>source</strong>: https://karpathy.bearblog.dev/year-in-review-2025/</span></div>
+      </header>
+      <section id="summary" class="five-layer summary-layer">
+        <h2>1 · 重點整理</h2>
+        <div class="summary-content"><div class="executive-summary"><p>2025 年大型語言模型（LLM）迎來關鍵的「範式轉變」，其中「增強學習可驗證獎勵」（RLVR）成為主流訓練方式，顯著提升了模型的推理能力與成本效益。同時，LLM 的智能被重新理解為「鬼魂」而非「動物」，其能力呈現尖峰狀，並催生了如 Cursor 這類新的應用程式層，改變了 LLM 的生態系。</p></div><div class="target-audience"><h4>適合對象</h4><span class="audience">AI 研究人員</span><span class="audience">軟體工程師</span><span class="audience">技術決策者</span><span class="audience">AI 產品經理</span></div><div class="contribution"><h4>重點收穫</h4><p>深入解析 2025 年 LLM 在訓練方法、智能本質及應用架構上的三大範式轉變，揭示了 RLVR 的重要性及新型 LLM 應用程式的潛力。</p></div></div>
+      </section>
+      <section id="content" class="five-layer content-layer">
+        <h2>2 · 主要內容</h2>
+        <div class="content-block"><h3>主要論點</h3><div class="argument-card"><div class="argument">2025 年大型語言模型（LLM）訓練進入「增強學習可驗證獎勵」（RLVR）新階段，取代過往主流的監督式微調與人類回饋增強學習。</div><div class="context">背景：此論點位於文章開頭，點出 2025 年 LLM 發展在訓練方式上的核心轉變。它與後續討論 LLM 智能本質的論點形成對比，並為 RLVR 如何促成更複雜能力的發展奠定基礎。</div><div class="evidence">證據：In 2025, Reinforcement Learning from Verifiable Rewards (RLVR) emerged as the de facto new major stage to add to this mix. By training LLMs against automatically verifiable rewards across a number of environments (e.g. think math/code puzzles), the LLMs spontaneously develop strategies that look like "reasoning" to humans - they learn to break down problem solving into intermediate calculations and they learn a number of problem solving strategies for going back and forth to figure things out</div><div class="evidence-translation">繁中補充：2025 年，『增強學習可驗證獎勵』（RLVR）成為了這個組合中一個事實上的新主要階段。透過在多個環境（例如數學/程式碼謎題）中，讓 LLM 針對自動可驗證的獎勵進行訓練，LLM 會自發發展出看似人類『推理』的策略——牠們學會將問題分解成中間計算，並學會了許多來回摸索以找出解決方案的策略。</div><div class="rationale">為何重要：RLVR 的出現代表了 LLM 訓練方法論上的重大突破，從根本上改變了模型學習和展現智能的方式，是 2025 年 LLM 發展最重要的範式轉變之一，直接影響了模型的效能與成本效益。</div><div class="importance">高</div></div><div class="argument-card"><div class="argument">LLM 智能的本質被重新理解為「召喚鬼魂」，而非「培育動物」，這影響了對其能力與限制的認知。</div><div class="context">背景：此論點承接 RLVR 的訓練方法，深入探討其對 LLM 智能本質理解帶來的影響。它與「增強學習可驗證獎勵」的訓練方式相互呼應，並為後續探討新應用程式層的發展提供理論基礎。</div><div class="evidence">證據：We're not "evolving/growing animals", we are "summoning ghosts". Everything about the LLM stack is different (neural architecture, training data, training algorithms, and especially optimization pressure) so it should be no surprise that we are getting very different entities in the intelligence space, which are inappropriate to think about through an animal lens.</div><div class="evidence-translation">繁中補充：我們不是在『演化/培育動物』，而是在『召喚鬼魂』。LLM 的堆疊（神經架構、訓練資料、訓練演算法，尤其是最佳化壓力）的一切都不同，所以我們在智能領域得到非常不同的實體，用動物的視角來思考牠們是不恰當的，這點並不令人意外。</div><div class="rationale">為何重要：將 LLM 智能比喻為「鬼魂」而非「動物」，提供了一個更貼切的比喻來理解其非線性的、爆發式的學習特性，以及與傳統生物智能的差異，這有助於避免誤用和誤解，並引導更適合的應用開發。</div><div class="importance">高</div></div><div class="argument-card"><div class="argument">「Cursor」這類新興應用程式層的出現，展示了 LLM 應用程式的組織化與專業化趨勢。</div><div class="context">背景：此論點聚焦於 LLM 的應用層面，以 Cursor 為例，說明了 LLM 如何從單純的工具轉變為建構更複雜、特定領域應用程式的基礎。它與前述的訓練方式和智能本質探討，構成了 LLM 發展的完整圖像。</div><div class="evidence">證據：What I find most notable about Cursor (other than its meteoric rise this year) is that it convincingly revealed a new layer of an "LLM app" - people started to talk about "Cursor for X". As I highlighted in my Y Combinator talk this year ( transcript and video ), LLM apps like Cursor bundle and orchestrate LLM calls for specific verticals: They do the "context engineering" They orchestrate multiple LLM calls under the hood strung into increasingly more complex DAGs, carefully balancing performance and cost tradeoffs. They provide an application-specific GUI for the human in the loop</div><div class="evidence-translation">繁中補充：我發現 Cursor（除了今年它的飛速崛起之外）最引人注目的是，它令人信服地揭示了『LLM 應用程式』的新層次——人們開始談論『各行各業的 Cursor』。正如我在今年的 Y Combinator 演講中所強調的，像 Cursor 這樣的 LLM 應用程式會為特定行業捆綁和組織 LLM 呼叫：牠們進行『上下文工程』，在底層編排多個 LLM 呼叫，串聯成越來越複雜的有向無環圖（DAGs），仔細平衡效能與成本考量，並為人機互動提供特定應用程式的 GUI。</div><div class="rationale">為何重要：Cursor 代表了 LLM 應用程式發展的一個重要方向，顯示了將 LLM 整合進特定工作流程，並提供專業化介面的價值，這擴展了 LLM 的實用性，並預示了未來應用程式的架構演變。</div><div class="importance">高</div></div><div class="argument-card"><div class="argument">Anthropic 的 Claude Code (CC) 改變了 AI 的互動模式，從單純的網站服務轉變為「住在」使用者電腦中的「小精靈」。</div><div class="context">背景：此論點作為文章中對 LLM 應用與互動方式的具體案例。它呼應了前述「鬼魂」的智能比喻，並強調了 AI 服務從雲端延伸到使用者本地端互動模式的轉變。</div><div class="evidence">證據：Anthropic got this order of precedence correct and packaged CC into a delightful, minimal CLI form factor that changed what AI looks like - it's not just a website you go to like Google, it's a little spirit/ghost that "lives" on your computer. This is a new, distinct paradigm of interaction with an AI.</div><div class="evidence-translation">繁中補充：Anthropic 掌握了這種優先順序，並將 CC 包裝成一個令人愉悅、簡潔的命令列介面（CLI）形式，改變了 AI 的樣貌——它不再只是像 Google 那樣一個你會上去的網站，而是一個『住』在你電腦裡的小精靈／鬼魂。這是一種與 AI 互動的全新、獨特的範式。</div><div class="rationale">為何重要：Claude Code (CC) 的案例突顯了 AI 介面和部署模式的演進，從遠端雲端服務轉變為更貼近使用者、可嵌入本地系統的互動方式，這對使用者體驗和 AI 的普及性有著重要影響。</div><div class="importance">中</div></div><div class="argument-card"><div class="argument">「Vibe coding」展現了 LLM 在英語自然語言介面下，讓非專業人士也能進行複雜程式開發的可能性。</div><div class="context">背景：此論點探討了 LLM 在程式開發領域的變革，直接關聯到 LLM 能力的提升和應用的普及化。它呼應了「鬼魂」智能的某些應用面向，並與「Cursor」這類應用程式層的發展有潛在的協同作用。</div><div class="evidence">證據：2025 is the year that AI crossed a capability threshold necessary to build all kinds of impressive programs simply via English, forgetting that the code even exists. Amusingly, I coined the term "vibe coding" in this shower of thoughts tweet totally oblivious to how far it would go :). With vibe coding, programming is not strictly reserved for highly trained professionals, it is something anyone can do.</div><div class="evidence-translation">繁中補充：2025 年是 AI 跨越了必要能力門檻的一年，能夠僅透過英語就能夠建構各種令人印象深刻的程式，甚至忘記程式碼的存在。有趣的是，我在這則思緒迸發的推文中創造了『Vibe Coding』這個詞，當時完全沒意識到它會發展到什麼程度。透過 Vibe Coding，程式設計不再僅限於訓練有素的專業人士，而是任何人都可以做的事。</div><div class="rationale">為何重要：Vibe coding 的概念驗證了 LLM 在降低程式開發門檻方面的潛力，實現了技術民主化的願景，這對軟體開發產業和個人創造力都將產生深遠影響。</div><div class="importance">中</div></div><div class="argument-card"><div class="argument">未來 LLM 的使用者介面（UIUX）將從目前的文字對話，朝向更符合人類視覺化和空間化偏好的圖像、動畫、網頁應用等多媒體格式發展。</div><div class="context">背景：此論點為文章的結語部分，對 LLM 的未來發展方向進行展望，特別是在使用者互動介面（UIUX）的革新。它與前述的「鬼魂」智能概念相呼應，強調了 AI 應如何更符合人性。</div><div class="evidence">證據：In particular, in terms of the UIUX, "chatting" with LLMs is a bit like issuing commands to a computer console in the 1980s. Text is the raw/favored data representation for computers (and LLMs), but it is not the favored format for people, especially at the input. People actually dislike reading text - it is slow and effortful. Instead, people love to consume information visually and spatially and this is why the GUI has been invented in traditional computing. In the same way, LLMs should speak to us in our favored format - in images, infographics, slides, whiteboards, animations/videos, web apps, etc.</div><div class="evidence-translation">繁中補充：特別是在 UIUX 方面，與 LLM 『聊天』有點像在 1980 年向電腦主控台發出指令。文字是電腦（和 LLM）的原始/偏好資料表示，但它不是人們的偏好格式，尤其是在輸入端。人們其實不喜歡閱讀文字——這又慢又費力。取而代之的是，人們喜歡視覺化和空間化地消費資訊，這也是為何傳統運算中 GUI 被發明出來的原因。同樣地，LLM 應該以我們偏好的格式與我們溝通——以圖像、資訊圖表、投影片、白板、動畫/影片、網頁應用程式等形式。</div><div class="rationale">為何重要：此論點指出了目前 LLM 互動模式的局限性，並預測了未來更自然、更直觀的人機互動方式，這對於提升 LLM 的易用性和推廣普及至關重要，也為相關產品開發指明了方向。</div><div class="importance">中</div></div><div class="thinking-path"><h4>思考脈絡</h4><p>作者試圖釐清 2025 年大型語言模型（LLM）發展中的關鍵「範式轉變」，探討這些轉變如何改變了 LLM 的訓練方式、智能的本質以及應用程式的架構。</p><h4>關鍵轉折</h4><ul><li>作者選擇從「增強學習可驗證獎勵」（RLVR）、「智能的形狀」（鬼魂 vs. 動物）和「新的應用程式層」（Cursor）這三個角度來分析，因為它們代表了 2025 年 LLM 領域最顯著且具概念性的突破，足以影響整個領域的發展軌跡。</li></ul><h4>重要案例</h4><ul><li>「增強學習可驗證獎勵」（RLVR）的出現，取代了過去的主流訓練方式，透過自動可驗證的獎勵來訓練 LLM，使其能發展出類似「推理」的策略，並大幅提升了能力與成本效益。</li></ul></div></div>
+      </section>
+      <section id="questions" class="five-layer questions-layer">
+        <h2>3 · 重要問題</h2>
+        <div class="questions-block"><h3>核心問題</h3><ul class="core-questions"><li>2025年大型語言模型（LLM）發展中的核心範式轉變為何？</li><li>這些範式轉變如何影響LLM的訓練方式、智能的本質以及應用程式的架構？</li></ul><h3>延伸思考</h3><ul class="open-questions"><li>RLVR是否會成為未來LLM訓練的標準，或是僅為特定類型的任務有效？</li><li>「智能的形狀」比喻（鬼魂vs.動物）對於我們理解和評估LLM的潛在局限性有何具體啟示？</li><li>Cursor所代表的「新的應用程式層」將如何進一步重塑LLM與使用者互動的方式？</li><li>隨著LLM能力透過RLVR不斷提升，我們是否會看到更具體、更可控的AI智能形式出現？</li><li>Benchmarks在RLVR時代的有效性受到挑戰，未來應如何設計和衡量LLM的真實能力？</li></ul><h3>不同觀點</h3><div class="controversies"><div class="controversy"><h4>RLVR 與 RLHF 的根本性差異及對 LLM 能力的影響</h4><p><strong>論點：</strong>RLVR 是一種根本性的改變，能讓 LLM 發展出類似「推理」的能力，並帶來更高的效率，這與基於人類回饋的 RLHF 不同。</p><p><strong>反方：</strong>雖然 RLVR 帶來了效率提升和類似推理的表現，但它是否真正實現了「推理」的本質，抑或是另一種形式的模式匹配或優化？RLHF 在特定場景下是否仍有不可替代的價值？</p><p><strong>證據需求：</strong>對 RLVR 和 RLHF 訓練出的模型的認知能力進行更深入的比較研究，包括在複雜、開放式任務上的表現，以及對其決策過程的可解釋性分析。需要驗證 RLVR 是否能處理 RLHF 難以處理的、需要長期規劃和抽象思維的問題。</p></div><div class="controversy"><h4>LLM 智慧的「形狀」：從「動物」到「鬼魂」的隱喻</h4><p><strong>論點：</strong>LLM 的智慧更像是「鬼魂」，其特徵與人類基於生存演化的「動物」智慧模型截然不同，表現出「鋸齒狀」的智能特徵。</p><p><strong>反方：</strong>「鬼魂」的隱喻是否過於簡化或帶有潛在的誤導性？這種非演化論的視角，是否忽略了 LLM 在模仿人類學習過程中的某些共性？「鋸齒狀」智能的說法，是否掩蓋了 LLM 在某些領域的穩定性和持續進步？</p><p><strong>證據需求：</strong>需要更多對 LLM 內在工作機制的研究，以科學的語言描述其智能的「形狀」和特性，而不僅僅依賴於隱喻。需要對比人類智能和 LLM 智能在不同認知任務上的根本差異和共性，並探討是否能用統一的框架來理解不同類型的智能。</p></div><div class="controversy"><h4>基準測試（Benchmark）在 RLVR 時代的有效性與可信度</h4><p><strong>論點：</strong>在 RLVR 時代，基準測試的可信度嚴重下降，因為它們很容易被 RLVR 或合成數據生成技術所「攻破」，導致「在測試集上訓練」成為一種新興的藝術。</p><p><strong>反方：</strong>雖然存在被攻破的風險，但嚴謹設計的基準測試仍然是評估 LLM 進步的重要手段。是否可以設計出更具魯棒性、更難以被攻破的基準測試，或者結合其他評估方法來彌補其不足？</p><p><strong>證據需求：</strong>需要開發新的、更難被「規避」的評估方法和基準測試，例如動態生成、對抗性測試或基於真實世界任務的持續評估。同時，需要深入研究現有基準測試被攻破的機制，並提出相應的防禦策略。</p></div></div></div>
+      </section>
+      <section id="quotes" class="five-layer quotes-layer">
+        <h2>4 · 精選語錄</h2>
+        <div class="quotes-grid"><blockquote class="quote-item"><p>“Reinforcement Learning from Verifiable Rewards (RLVR) emerged as the de facto new major stage to add to this mix.”</p><div class="quote-translation">繁中補充：「透過可驗證獎勵進行的強化學習」（RLVR）成為了這個組合中，事實上是新的主要階段。</div><div class="quote-context">這是作者在描述 2025 年 LLM 發展中的一個重要轉變，相較於過去的預訓練、監督式微調和人類回饋強化學習，RLVR 是一種新的訓練方式。</div><footer><small>位置：1. Reinforcement Learning from Verifiable Rewards (RLVR) - 第二段</small><br><small>說服力：0.90</small></footer><div class="quote-score-detail">說服力計算：0.90 = 0.40*0.93（可驗證性） + 0.35*0.90（脈絡貼合度） + 0.25*0.85（表述清晰度）</div><div class="quote-analysis">這句話點出了 RLVR 在 LLM 訓練流程中的地位，強調它是「事實上」的新階段，暗示了它的重要性和普及性，對於理解 LLM 技術的演進非常有說服力。</div></blockquote><blockquote class="quote-item"><p>“By training LLMs against automatically verifiable rewards across a number of environments (e.g. think math/code puzzles), the LLMs spontaneously develop strategies that look like "reasoning" to humans - they learn to break down problem solving into intermediate calculations and they learn a number of problem solving strategies for going back and forth to figure things out”</p><div class="quote-translation">繁中補充：透過在多個環境（例如數學/程式碼謎題）中，以可自動驗證的獎勵來訓練 LLM，LLM 會自發地發展出在人類看來像「推理」的策略——它們學會將問題解決分解為中間計算，並學會了多種來回嘗試以找出解決方案的問題解決策略。</div><div class="quote-context">這段引用進一步解釋了 RLVR 的機制，說明了它如何讓 LLM 發展出類似推理的能力，透過實際的例子（數學/程式碼謎題）來具體呈現。</div><footer><small>位置：1. Reinforcement Learning from Verifiable Rewards (RLVR) - 第三段</small><br><small>說服力：0.85</small></footer><div class="quote-score-detail">說服力計算：0.85 = 0.40*0.88（可驗證性） + 0.35*0.85（脈絡貼合度） + 0.25*0.80（表述清晰度）</div><div class="quote-analysis">這段話用具體的訓練方式和產生的效果，清楚地解釋了 RLVR 的優勢，它讓 LLM 的學習過程更接近人類的思考模式，這對於提升 LLM 的實用性和智慧程度有很強的說服力。</div></blockquote><blockquote class="quote-item"><p>“We're not "evolving/growing animals", we are "summoning ghosts".”</p><div class="quote-translation">繁中補充：我們不是在「演化/飼養動物」，我們是在「召喚幽靈」。</div><div class="quote-context">這是作者用來比喻 LLM 智能本質的一段話，用來區別於傳統對 AI 智能發展的想像。</div><footer><small>位置：2. Ghosts vs. Animals / Jagged Intelligence - 第二段</small><br><small>說服力：0.80</small></footer><div class="quote-score-detail">說服力計算：0.80 = 0.40*0.83（可驗證性） + 0.35*0.80（脈絡貼合度） + 0.25*0.75（表述清晰度）</div><div class="quote-analysis">這個比喻非常生動且具啟發性，用「幽靈」來形容 LLM 的非線性、難以預測但強大的特性，挑戰了人們對 AI 發展的傳統觀念，引發讀者對 LLM 本質的深入思考。</div></blockquote><blockquote class="quote-item"><p>“Supervision bits-wise, human neural nets are optimized for survival of a tribe in the jungle but LLM neural nets are optimized for imitating humanity's text, collecting rewards in math puzzles, and getting that upvote from a human on the LM Arena.”</p><div class="quote-translation">繁中補充：從監督的位元層面來看，人類的神經網路是為了在叢林中生存和部落的延續而優化，但 LLM 的神經網路則是為了模仿人類的文本、在數學謎題中收集獎勵，以及在 LM Arena 上獲得人類的按讚而優化。</div><div class="quote-context">這段引用在比較人類智能和 LLM 智能的優化目標時提出的，強調了兩者在訓練驅動和目的上的根本差異。</div><footer><small>位置：2. Ghosts vs. Animals / Jagged Intelligence - 第二段</small><br><small>說服力：0.85</small></footer><div class="quote-score-detail">說服力計算：0.85 = 0.40*0.88（可驗證性） + 0.35*0.85（脈絡貼合度） + 0.25*0.80（表述清晰度）</div><div class="quote-analysis">這段話非常精準地指出了人類智能與 LLM 智能的核心差異，點出了 LLM 的優化目標更偏向於模仿和獎勵機制，而非像人類那樣涉及更廣泛的生存和社會因素，這解釋了為何 LLM 的行為模式會如此獨特。</div></blockquote><blockquote class="quote-item"><p>“The core issue is that benchmarks are almost by construction verifiable environments and are therefore immediately susceptible to RLVR and weaker forms of it via synthetic data generation.”</p><div class="quote-translation">繁中補充：核心問題在於，基準測試幾乎是透過建構而成的可驗證環境，因此極易受到 RLVR 以及透過合成數據生成等較弱形式的影響。</div><div class="quote-context">作者在討論為什麼對 2025 年的基準測試失去信心時提出的觀點，解釋了基準測試容易被 LLM 訓練方法所操縱。</div><footer><small>位置：2. Ghosts vs. Animals / Jagged Intelligence - 第四段</small><br><small>說服力：0.90</small></footer><div class="quote-score-detail">說服力計算：0.90 = 0.40*0.93（可驗證性） + 0.35*0.90（脈絡貼合度） + 0.25*0.85（表述清晰度）</div><div class="quote-analysis">這段話直接點出了當前 LLM 評估體系中的一個重大漏洞，強調了基準測試的可驗證性反而使其容易被 RLVR 等技術「攻破」，這對於理解 LLM 評估的挑戰和未來的研究方向具有重要的警示意義。</div></blockquote><blockquote class="quote-item"><p>“What I find most notable about Cursor (other than its meteoric rise this year) is that it convincingly revealed a new layer of an "LLM app" - people started to talk about "Cursor for X".”</p><div class="quote-translation">繁中補充：我認為 Cursor 最值得注意的是（除了它今年如日中天的崛起之外），它令人信服地揭示了「LLM 應用程式」的一個新層次——人們開始談論「針對 X 的 Cursor」。</div><div class="quote-context">作者在討論 Cursor 這款產品時，指出它對於「LLM 應用程式」的定義和發展有著重要的啟示。</div><footer><small>位置：3. Cursor / new layer of LLM apps - 第一段</small><br><small>說服力：0.75</small></footer><div class="quote-score-detail">說服力計算：0.75 = 0.40*0.78（可驗證性） + 0.35*0.75（脈絡貼合度） + 0.25*0.70（表述清晰度）</div><div class="quote-analysis">這句話抓住了 Cursor 產品的核心價值，它不僅僅是一個工具，更是開創了「LLM 應用程式」的新範式，即將 LLM 的能力封裝起來，為特定領域（X）提供解決方案，這為未來應用程式的開發方向提供了新的思路。</div></blockquote></div>
+      </section>
+      <section id="insights" class="five-layer insights-layer">
+        <h2>5 · 行動建議</h2>
+        <div class="insights-block"><h3>重要發現</h3><ul class="insights"><li>2025 年 LLM 發展的核心範式轉變在於訓練方法的革新，特別是「增強學習可驗證獎勵」（RLVR）的崛起，它使得 LLM 能夠發展出更接近「推理」的能力，並大幅提升了效能與成本效益。</li><li>LLM 的智能特性不再是線性的、類比人類的「動物」式成長，而是呈現「鬼魂」般的、高度專精且具備「鋸齒狀」特徵的智能，在特定領域表現卓越，但在其他方面則顯得相對薄弱。</li><li>過往的基準測試（benchmarks）在 RLVR 驅動下，已難以準確衡量 LLM 的真實能力，因為 LLM 可以利用驗證機制「訓練於測試集」，導致測試分數虛高，而實際應用中的魯棒性仍有待觀察。</li><li>「Cursor」為代表的新一代 LLM 應用程式，不再僅僅是單純的 API 調用，而是能進行「上下文工程」和編排複雜的 LLM 呼叫鏈，形成「有向無環圖」（DAG），在效能與成本之間取得精妙平衡，展現了應用程式層的全新架構。</li><li>LLM 的「思考時間」或「推理步驟」成為了一個可控的參數，透過增加計算量來提升 LLM 的能力，這為模型性能優化開闢了新的維度，也意味著推理複雜度將成為未來 LLM 應用中的關鍵考量。</li></ul><h3>實際做法</h3><div class="recommendations"><div class="recommendation"><h4>技術長/研發負責人</h4><p>評估並試點導入 RLVR 訓練流程，專注於具備可驗證獎勵機制的任務（如程式碼生成、數學推理、資料分析）。</p><div class="reasoning">RLVR 是 2025 年最關鍵的範式轉變，直接影響 LLM 的核心能力和成本效益。搶先採用 RLVR，能讓團隊快速掌握新型態的訓練方法，並在關鍵能力上取得領先，避免落後於競爭對手。</div><span class="priority-badge">P0</span></div><div class="recommendation"><h4>產品經理</h4><p>重新審視現有產品的 LLM 應用架構，思考如何將 LLM 呼叫組合成更複雜的 DAG，以實現類似 Cursor 的「上下文工程」和垂直領域的深度整合。</p><div class="reasoning">Cursor 的成功表明了 LLM 應用程式正從單純的接口轉向更複雜的協調者。盡早規劃產品在這一新架構下的發展，能為未來產品的差異化和競爭力打下基礎，抓住應用層的發展機遇。</div><span class="priority-badge">P0</span></div><div class="recommendation"><h4>AI 研究員/架構師</h4><p>投入資源研究 LLM 智能的「鋸齒狀」特性，理解其優勢與劣勢，並開發相應的評估方法，避免過度依賴傳統基準測試，轉而關注實際應用場景下的魯棒性和可靠性。</p><div class="reasoning">理解 LLM 智能的「鬼魂」模型和「鋸齒狀」表現，是有效利用 LLM 並避免誤判的關鍵。開發新的評估方法，能更準確地衡量模型在真實世界中的表現，為產品決策提供可靠依據。</div><span class="priority-badge">P1</span></div><div class="recommendation"><h4>產品經理/業務發展</h4><p>探索利用 LLM 的「思考時間」和推理能力，設計能夠執行更複雜、多步驟任務的應用程式，並將其作為產品的核心賣點。</p><div class="reasoning">「思考時間」成為可控的性能調優參數，為開發需要深度推理和規劃的應用提供了可能。這將是區別於簡單 Prompt-Response 互動的新型態應用，能滿足更複雜的客戶需求。</div><span class="priority-badge">P1</span></div><div class="recommendation"><h4>資料科學家/工程師</h4><p>建立一個系統性的「可驗證獎勵」生成和評估框架，並將其整合到現有的 LLM 訓練流水線中，確保訓練過程的數據品質和獎勵機制的有效性。</p><div class="reasoning">RLVR 的有效性高度依賴於可驗證獎勵機制的設計。建立一個穩健的框架，能夠確保模型獲得的獎勵是客觀且有意義的，進而提升訓練效果，為長期持續的模型優化奠定基礎。</div><span class="priority-badge">P2</span></div></div></div>
+      </section>
+    </main>
+  </div>
+  <script>
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener('click', (event) => {
+    event.preventDefault();
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+  </script>
+</body>
+</html>
